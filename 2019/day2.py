@@ -9,7 +9,7 @@ def multiply_instr(a, b, out, cmd_strip):
 	return cmd_strip
 
 def run_program(noun, verb):
-	cmd_strip = open("day2.txt", "r").readline().split(',')
+	cmd_strip = open("inputs/day2.txt", "r").readline().split(',')
 	cmd_strip = list(map(int, cmd_strip))
 
 	cmd_strip[1] = noun

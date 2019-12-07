@@ -16,14 +16,14 @@ def calculate_fuel_complete(mass):
 
 def part1():
 	sum = 0;
-	for mass in open("day1_input.txt").readlines():
+	for mass in open("inputs/day1.txt").readlines():
 		sum += calculate_fuel(int(mass));
 
 	print(sum)
 
 def part2():
 	sum = 0;
-	for mass in open("day1_input.txt").readlines():
+	for mass in open("inputs/day1.txt").readlines():
 		sum += calculate_fuel_complete(int(mass));
 
 	print(sum)

@@ -66,7 +66,7 @@ def add_wire_length(cmd, x, y, step, grid, first_wire):
 
 
 def main():
-	with open("day3.txt", "r") as data:
+	with open("inputs/day3.txt", "r") as data:
 		wire_a = data.readline().split(',')
 		wire_b = data.readline().split(',')
 

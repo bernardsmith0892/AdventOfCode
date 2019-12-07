@@ -25,7 +25,7 @@ def find_orbit_path(orbit_list, start = "YOU", end = "SAN"):
 					queue.append(w)
 
 orbit_list = {}
-with open("day6.txt", "r") as file:
+with open("inputs/day6.txt", "r") as file:
 	for line in file.readlines():
 		line = line.strip().split(")")
 
