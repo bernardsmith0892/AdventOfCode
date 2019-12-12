@@ -6,251 +6,78 @@ DEBUG = False
 DEBUG_RANGE = 6
 
 
-''' Adds a and b. Stores the result in target. '''
-def add(a, b, target, mode, memory):
-	# Mode Control
-	a = memory[a] if mode[0] == 0 else a
-	b = memory[b] if mode[1] == 0 else b
-
-	# Actions
-	memory[target] = a + b
-
-	if DEBUG:
-		print(f"{a} + {b} = {memory[target]}. Stored in {target}.")
-
-	return 4
-
-''' Multiplies a and b. Stores the result in target. '''
-def multiply(a, b, target, mode, memory):
-	# Mode Control
-	a = memory[a] if mode[0] == 0 else a
-	b = memory[b] if mode[1] == 0 else b
-
-	# Actions
-	memory[target] = a * b
-
-	if DEBUG:
-		print(f"{a} * {b} = {memory[target]}. Stored in {target}.")
-
-	return 4
-
-''' Accepts interactive user input and stores it in target. '''
-def input_memory(target, mode, memory):
-	memory[target] = int(input(f"Input: "))
-
-	if DEBUG:
-		print(f"Stored {memory[target]} in {target}.")
-
-	return 2
-
-''' Accepts automated input from input_data param and stores it in target. '''
-def input_memory_automated(input_data, target, mode, memory):
-	memory[target] = input_data
-
-	if DEBUG:
-		print(f"Stored {memory[target]} in {target}.")
-
-	return 2
-
-''' Outputs value of target to STDOUT. '''
-def output_memory(target, mode, memory):
-	# Mode Control
-	target = memory[target] if mode[0] == 0 else target
-
-	# Actions
-	print(f"{target}")
-
-	return 2
-
-''' Returns the value of the target for use by other scripts. '''
-def output_memory_automated(target, mode, memory):
-	# Mode Control
-	target = memory[target] if mode[0] == 0 else target
-
-	# Actions
-	return target
-
-''' Tests if target value != 0. Returns address to jump to, if true. Returns a None type if false. Receiving a None type implies moving the position value normally. (by 3) '''
-def jump_true(test, target, mode, memory):
-	# Mode Control
-	test = memory[test] if mode[0] == 0 else test
-	target = memory[target] if mode[1] == 0 else target
-
-	if DEBUG:
-		print(f"Testing if {test} != 0. Jumping to {target}, if true.")
-
-	# Actions
-	return target if test != 0 else None
-
-''' Tests if target value == 0. Returns address to jump to, if true. Returns a None type if false. Receiving a None type implies moving the position value normally. (by 3) '''
-def jump_false(test, target, mode, memory):
-	# Mode Control
-	test = memory[test] if mode[0] == 0 else test
-	target = memory[target] if mode[1] == 0 else target
-
-	if DEBUG:
-		print(f"Testing if {test} == 0. Jumping to {target}, if true.")
-
-	# Actions
-	return target if test == 0 else None
-
-''' Tests a < b. Store 1 in target if true. 0 if false. '''
-def less_than(a, b, target, mode, memory):
-	# Mode Control
-	a = memory[a] if mode[0] == 0 else a
-	b = memory[b] if mode[1] == 0 else b
-
-	# Actions
-	memory[target] = 1 if a < b else 0
-
-	if DEBUG:
-		print(f"{a} < {b} = {memory[target]}. Stored in {target}.")
-
-	return 4
-
-''' Tests a == b. Store 1 in target if true. 0 if false. '''
-def equals(a, b, target, mode, memory):
-	# Mode Control
-	a = memory[a] if mode[0] == 0 else a
-	b = memory[b] if mode[1] == 0 else b
-
-	# Actions
-	memory[target] = 1 if a == b else 0
-
-	if DEBUG:
-		print(f"{a} == {b} = {memory[target]}. Stored in {target}.")
-
-	return 4
-
-''' Decodes the mode settings for an instruction value. Returns the opcode and list of modes in a tuple '''
-def decode_instruction(instruction):
-	mode = [0, 0, 0]
-
-	opcode = instruction % 100
-	mode[0] = (instruction // 100) % 10
-	mode[1] = (instruction // 1000) % 10
-	mode[2] = (instruction // 10000) % 10
-
-	if DEBUG:
-		print(f"Decoding {instruction} into => Opcode: {opcode}, Modes: {mode}")
-
-	return opcode, mode
-
-''' Reads and executes an Intcode program. '''
-def run_program(filename):
-	# Open Intcode file
-	with open(filename, "r") as memory:
-		memory = list(map(int, memory.readline().split(',')))
-
-		# Main Loop
-		position = 0
-		step = 1
-		skip_until = 0
-		while position < len(memory):
-			if DEBUG:
-				print(f"Position: {position}, Step: {step}")
-
-				start = position# - DEBUG_RANGE
-				stop = position + DEBUG_RANGE
-				start = 0 if start < 0 else start
-				stop = len(memory) - 1 if stop > len(memory) - 1 else stop
-
-				print(memory[ start : stop ])
-			# Decodes the instruction at the current memory position
-			opcode, mode = decode_instruction( memory[position] )
-
-			if opcode == 1: # Add
-				position += add(memory[position + 1], memory[position + 2], memory[position + 3], mode, memory)
-			
-			elif opcode == 2: # Multiply
-				position += multiply(memory[position + 1], memory[position + 2], memory[position + 3], mode, memory)
-			
-			elif opcode == 3: # User Input
-				position += input_memory(memory[position + 1], mode, memory)
-			
-			elif opcode == 4: # Output Value
-				position += output_memory(memory[position + 1], mode, memory)
-			
-			elif opcode == 5: # Jump If True
-				result = jump_true(memory[position + 1], memory[position + 2], mode, memory)
-				position = result if result != None else position + 3
-			
-			elif opcode == 6: # Jump If False
-				result = jump_false(memory[position + 1], memory[position + 2], mode, memory)
-				position = result if result != None else position + 3
-			
-			elif opcode == 7: # Less Than
-				position += less_than(memory[position + 1], memory[position + 2], memory[position + 3], mode, memory)
-			
-			elif opcode == 8: # Equals
-				position += equals(memory[position + 1], memory[position + 2], memory[position + 3], mode, memory)
-			
-			elif opcode == 99: # Halt Program
-				return
-			
-			else: # Error if the current memory position does not decode into a valid instruction.
-				print(f"ERROR! Unknown opcode {opcode} from {memory[position]} at position {position}.")
-				print(memory)
-				break
-
-			if DEBUG:
-				if step > skip_until:
-					skip_input = input("...")
-					skip_until = 0 if skip_input == "" else int(skip_input) + step
-				else:
-					print("...")
-
-			step += 1
-
 ''' A self-contained execution of an Intcode program '''
 class VM:
 	memory = []
 	input_queue = []
 	output_queue = []
 	position = 0
+	relative_base = 0
+	automated = False
 
-	def __init__(self, filename):
+	def __init__(self, filename, size = 256, automated = False):
 		with open(filename, "r") as file:
 			self.memory = list(map(int, file.readline().split(',')))
+
+		self.pad_memory(size)
+
 		self.position = 0
+		self.relative_base = 0
 		self.input_queue = []
 		self.output_queue = []
+		self.automated = automated
+
+	def run(self):
+		status = True
+		while status:
+			if DEBUG:
+				self.print_status()
+
+			status = self.step()
+
+			if DEBUG:
+				input("...")
+
 
 	''' Execute one instruction in the VM's program. Returns True if running normally. Returns False if halted. (Opcode 99) Returns None if awaiting input. '''
 	def step(self):
-		opcode, mode = decode_instruction( self.memory[ self.position ] )
+		opcode, params = self.decode_instruction( self.memory[ self.position ] )
 
 		if opcode == 1: # Add
-			self.position += add(self.memory[self.position + 1], self.memory[self.position + 2], self.memory[self.position + 3], mode, self.memory)
+			self.add(params)
 		
 		elif opcode == 2: # Multiply
-			self.position += multiply(self.memory[self.position + 1], self.memory[self.position + 2], self.memory[self.position + 3], mode, self.memory)
+			self.multiply(params)
 		
 		elif opcode == 3: # Pass input from the input queue into the program
-			if len(self.input_queue) != 0:
-				self.position += input_memory_automated(self.input_queue.pop(0), self.memory[self.position + 1], mode, self.memory)
+			if self.automated:
+				if len(self.input_queue) != 0:
+					self.input_memory_automated(self.input_queue.pop(0), params)
+				else:
+					return None
 			else:
-				return None
+				self.input_memory(params)
 		
 		elif opcode == 4: # Adds output from the program into the output queue
-			result = output_memory_automated(self.memory[self.position + 1], mode, self.memory)
-			self.output_queue.append(result)
-
-			self.position += 2
+			if self.automated:
+				self.output_queue.append( self.output_memory_automated(params) )
+			else:
+				self.output_memory(params)
 		
 		elif opcode == 5: # Jump If True
-			result = jump_true(self.memory[self.position + 1], self.memory[self.position + 2], mode, self.memory)
-			self.position = result if result != None else self.position + 3
+			result = self.jump_true(params)
 		
 		elif opcode == 6: # Jump If False
-			result = jump_false(self.memory[self.position + 1], self.memory[self.position + 2], mode, self.memory)
-			self.position = result if result != None else self.position + 3
+			result = self.jump_false(params)
 		
 		elif opcode == 7: # Less Than
-			self.position += less_than(self.memory[self.position + 1], self.memory[self.position + 2], self.memory[self.position + 3], mode, self.memory)
+			self.less_than(params)
 		
 		elif opcode == 8: # Equals
-			self.position += equals(self.memory[self.position + 1], self.memory[self.position + 2], self.memory[self.position + 3], mode, self.memory)
+			self.equals(params)
+
+		elif opcode == 9: # Change Relative Base
+			self.adjust_relative_base(params)
 		
 		elif opcode == 99: # Halt Program
 			return False
@@ -258,7 +85,7 @@ class VM:
 		else: # Error if the current self.memory self.position does not decode into a valid instruction.
 			print(f"ERROR! Unknown opcode {opcode} from {self.memory[self.position]} at self.position {self.position}.")
 			print(self.memory)
-			return "ERROR"
+			return False
 
 		return True
 
@@ -279,10 +106,188 @@ class VM:
 		start = 0 if start < 0 else start
 		stop = len(self.memory) - 1 if stop > len(self.memory) - 1 else stop
 
-		print(self.memory[ start : stop ])
+		# print(self.memory[ start : stop ])
+		print(self.memory)
 
 		print(f"Input Queue: {self.input_queue}")
 		print(f"Output Queue: {self.output_queue}")
+
+	''' Adds a and b. Stores the result in target. '''
+	def add(self, params):
+		a = params[0]
+		b = params[1]
+		target = params[2]
+
+		self.memory[target] = a + b
+
+		if DEBUG:
+			print(f"{a} + {b} = {self.memory[target]}. Stored in {target}.")
+
+		self.position += 4
+
+	''' Multiplies a and b. Stores the result in target. '''
+	def multiply(self, params):
+		a = params[0]
+		b = params[1]
+		target = params[2]
+		
+		self.memory[target] = a * b
+
+		if DEBUG:
+			print(f"{a} * {b} = {self.memory[target]}. Stored in {target}.")
+
+		self.position += 4
+
+	''' Accepts interactive user input and stores it in target. '''
+	def input_memory(self, params):
+		target = params[0]
+
+		self.memory[target] = int(input(f"Input: "))
+
+		if DEBUG:
+			print(f"Stored {self.memory[target]} in {target}.")
+
+		self.position += 2
+
+	''' Accepts automated input from input_data param and stores it in target. '''
+	def input_memory_automated(self, input_data, params):
+		target = params[0]
+
+		self.memory[target] = input_data
+
+		if DEBUG:
+			print(f"Stored {self.memory[target]} in {target}.")
+
+		self.position += 2
+
+	''' Outputs value of target to STDOUT. '''
+	def output_memory(self, params):
+		target = params[0]
+
+		print(f"{target}")
+
+		self.position += 2
+
+	''' Returns the value of the target for use by other scripts. '''
+	def output_memory_automated(self, params):
+		target = params[0]
+
+		self.position += 2
+		
+		# Actions
+		return target
+
+	''' Tests if target value != 0. Returns address to jump to, if true. Returns a None type if false. Receiving a None type implies moving the position value normally. (by 3) '''
+	def jump_true(self, params):
+		test = params[0]
+		target = params[1]
+
+		if DEBUG:
+			print(f"Testing if {test} != 0. Jumping to {target}, if true.")
+
+		# Actions
+		self.position = target if test != 0 else self.position + 3
+
+	''' Tests if target value == 0. Returns address to jump to, if true. Returns a None type if false. Receiving a None type implies moving the position value normally. (by 3) '''
+	def jump_false(self, params):
+		test = params[0]
+		target = params[1]
+
+		if DEBUG:
+			print(f"Testing if {test} == 0. Jumping to {target}, if true.")
+
+		# Actions
+		self.position = target if test == 0 else self.position + 3
+
+	''' Tests a < b. Store 1 in target if true. 0 if false. '''
+	def less_than(self, params):
+		a = params[0]
+		b = params[1]
+		target = params[2]
+
+		self.memory[target] = 1 if a < b else 0
+
+		if DEBUG:
+			print(f"{a} < {b} = {self.memory[target]}. Stored in {target}.")
+
+		self.position += 4
+
+	''' Tests a == b. Store 1 in target if true. 0 if false. '''
+	def equals(self, params):
+		a = params[0]
+		b = params[1]
+		target = params[2]
+
+		# Actions
+		self.memory[target] = 1 if a == b else 0
+
+		if DEBUG:
+			print(f"{a} == {b} = {self.memory[target]}. Stored in {target}.")
+
+		self.position += 4
+
+	def adjust_relative_base(self, params):
+		change = params[0]
+
+		self.relative_base += change
+
+		if DEBUG:
+			print(f"Changing relative base to {self.relative_base}.")
+
+		self.position += 2
+
+	''' Decodes the mode settings for an instruction value. Returns the opcode and list of params in a tuple '''
+	def decode_instruction(self, instruction):
+		mode = []
+		params = []
+
+		# A dictonary of what parameters are used to store to memory for each opcode.
+		storage_params = {
+		1 : '001',
+		2 : '001',
+		3 : '1',
+		4 : '0',
+		5 : '00',
+		6 : '00',
+		7 : '001',
+		8 : '001',
+		9 : '0',
+		99 : ''
+		}
+
+		# Extract the opcode
+		opcode = instruction % 100
+
+		# Extract the parameter modes
+		for m in range( len(storage_params[opcode]) ):
+			mode.append( (instruction // (10 ** (m + 2)) ) % 10 )
+
+		# Retrieve the parameters from memory based on the modes
+		for m in range( len(mode) ):
+			# Cases for when the given parameter is NOT an address to store to memory
+			if storage_params[opcode][m] == '0':
+				if mode[m] == 0:
+					params.append( self.memory[ self.memory[ self.position + m + 1 ] ] )
+				elif mode[m] == 1:
+					params.append( self.memory[ self.position + m + 1 ] )
+				elif mode[m] == 2:
+					params.append( self.memory[ self.relative_base + self.memory[ self.position + m + 1 ] ] )
+			
+			# Cases for when the instruction is supposed to use this paramter to store to memory
+			else:
+				if mode[m] == 2:
+					params.append( self.memory[ self.position + m + 1 ] + self.relative_base )
+				else:
+					params.append( self.memory[ self.position + m + 1 ] )
+
+		if DEBUG:
+			print(f"Decoding {instruction} into => Opcode: {opcode}, Modes: {mode}, Params: {params}")
+
+		return opcode, params
+
+	def pad_memory(self, size, padding = 0):
+		while len(self.memory) < size:
+			self.memory.append(padding)
 
 
 def main():
@@ -293,7 +298,8 @@ def main():
 	except:
 		pass
 
-	run_program(sys.argv[1])
+	program = VM(sys.argv[1], 2048)
+	program.run()
 
 if __name__ == '__main__':
 	main()
