@@ -1,5 +1,8 @@
 #!/usr/bin/local/python3.7
 
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 class Moon:
 	x,y,z = 0,0,0
 	i,j,k = 0,0,0
@@ -158,6 +161,11 @@ def part1():
 	<x=-4, y=-1, z=1>
 	'''
 
+	a,b,c = 0,0,0
+	x_array = []
+	y_array = []
+	z_array = []
+
 	moon = []
 	
 	moon.append(Moon(14, 2, 8))
@@ -173,6 +181,10 @@ def part1():
 	moon.append(Moon(9, -8, -3))
 	'''
 	for x in range(1000):
+		x_array.append(moon[1].x)
+		y_array.append(moon[1].y)
+		z_array.append(moon[1].z)
+
 		moon[0].gravity_pull(moon[1])
 		moon[0].gravity_pull(moon[2])
 		moon[0].gravity_pull(moon[3])
@@ -197,6 +209,13 @@ def part1():
 		total_energy += m.total_energy()
 
 	print(total_energy)	
+
+	fig = plt.figure()
+	ax = fig.gca(projection='3d')
+	ax.plot(x_array, y_array, z_array, label='Moon Path')
+	ax.legend()
+
+	#plt.show()
 
 def part2():
 	moon = []

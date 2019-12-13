@@ -15,11 +15,11 @@ class VM:
 	relative_base = 0
 	automated = False
 
-	def __init__(self, filename, size = 256, automated = False):
+	def __init__(self, filename, automated = False):
 		with open(filename, "r") as file:
 			self.memory = list(map(int, file.readline().split(',')))
 
-		self.pad_memory(size)
+		# self.pad_memory(size)
 
 		self.position = 0
 		self.relative_base = 0
@@ -237,7 +237,7 @@ class VM:
 		self.position += 2
 
 	''' Decodes the mode settings for an instruction value. Returns the opcode and list of params in a tuple '''
-	def decode_instruction(self, instruction):
+	def decode_instruction(self, instruction, disassembling=False):
 		mode = []
 		params = []
 
@@ -258,26 +258,47 @@ class VM:
 		# Extract the opcode
 		opcode = instruction % 100
 
+		# Halt if we're disassembling and this is an invalid opcode. Allows us to print this opcode as memory space.
+		# Will eventually throw an exception if we're not disassembling
+		if opcode not in storage_params and disassembling:
+			return opcode, mode
+
 		# Extract the parameter modes
 		for m in range( len(storage_params[opcode]) ):
 			mode.append( (instruction // (10 ** (m + 2)) ) % 10 )
+
+		# Only return the opcode and mode if we're disassembling the Intcode
+		if disassembling:
+			return opcode, mode
 
 		# Retrieve the parameters from memory based on the modes
 		for m in range( len(mode) ):
 			# Cases for when the given parameter is NOT an address to store to memory
 			if storage_params[opcode][m] == '0':
 				if mode[m] == 0:
+					# Add more memory space if this will attempt to access uninitialized memory
+					if self.memory[ self.position + m + 1 ] >= len(self.memory):
+						self.pad_memory( self.memory[ self.position + m + 1 ] + 1 )
 					params.append( self.memory[ self.memory[ self.position + m + 1 ] ] )
 				elif mode[m] == 1:
 					params.append( self.memory[ self.position + m + 1 ] )
 				elif mode[m] == 2:
+					# Add more memory space if this will attempt to access uninitialized memory
+					if self.relative_base + self.memory[ self.position + m + 1 ] >= len(self.memory):
+						self.pad_memory( self.relative_base + self.memory[ self.position + m + 1 ] + 1 )
 					params.append( self.memory[ self.relative_base + self.memory[ self.position + m + 1 ] ] )
 			
 			# Cases for when the instruction is supposed to use this paramter to store to memory
 			else:
 				if mode[m] == 2:
+					# Add more memory space if this will attempt to access uninitialized memory
+					if self.memory[ self.position + m + 1 ] + self.relative_base >= len(self.memory):
+						self.pad_memory( self.memory[ self.position + m + 1 ] + self.relative_base + 1 )	
 					params.append( self.memory[ self.position + m + 1 ] + self.relative_base )
 				else:
+					# Add more memory space if this will attempt to access uninitialized memory
+					if self.memory[ self.position + m + 1 ] >= len(self.memory):
+						self.pad_memory( self.memory[ self.position + m + 1 ] + 1 )
 					params.append( self.memory[ self.position + m + 1 ] )
 
 		if DEBUG:
@@ -285,21 +306,67 @@ class VM:
 
 		return opcode, params
 
+	'''
+	Print out the current memory space using mnemonic keywords
+	'''
+	def disassemble(self):
+		mnemonics = {
+		1 : 'add',
+		2 : 'mul',
+		3 : 'input',
+		4 : 'output',
+		5 : 'jnz',
+		6 : 'jz',
+		7 : 'less',
+		8 : 'eq',
+		9 : 'mvrb',
+		99 : 'halt',
+		}
+
+		pos = 0
+		while pos < len(self.memory):
+			opcode, mode = self.decode_instruction(self.memory[pos], True)
+			print(f"[{pos}]\t", end='')
+			if opcode in mnemonics:
+				print(f"{mnemonics[opcode]} ", end='')
+			else:
+				print(f"{opcode}", end='')
+
+			for m in range( len(mode) ):
+				if mode[m] == 0:
+					print(f"${self.memory[ pos + m + 1 ]} ", end='')
+				elif mode[m] == 1:
+					print(f"{self.memory[ pos + m + 1 ]} ", end='')
+				elif mode[m] == 2:
+					print(f"$RB+{self.memory[ pos + m + 1 ]} ", end='')
+
+			print()
+			pos += 1
+			pos += len(mode)
+
+
+
 	def pad_memory(self, size, padding = 0):
 		while len(self.memory) < size:
 			self.memory.append(padding)
 
 
+
 def main():
+	program = VM(sys.argv[1])
 	try:
 		if sys.argv[2] == "DEBUG":
 			global DEBUG
 			DEBUG = True
+			program.run()
+		elif sys.argv[2] == "DISASM":
+			program.disassemble()
+		else:
+			program.run()
 	except:
-		pass
+		program.run()
 
-	program = VM(sys.argv[1], 2048)
-	program.run()
+	
 
 if __name__ == '__main__':
 	main()
