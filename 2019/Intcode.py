@@ -90,7 +90,7 @@ class VM:
 		return True
 
 	def add_to_input_queue(self, new_input):
-		self.input_queue.append(new_input)
+		self.input_queue.append(int(new_input))
 
 	def read_from_output_queue(self):
 		return self.output_queue.pop(0)
