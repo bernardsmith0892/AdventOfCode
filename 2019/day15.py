@@ -2,6 +2,7 @@
 
 import Intcode
 import os
+from time import sleep
 
 class Grid:
 	grid = {'0,0': 1}
@@ -93,11 +94,11 @@ class Grid:
 					if self.grid[f"{x},{y}"] == 0:
 						print("█", end="")
 					elif self.grid[f"{x},{y}"] == 1:
-						print(".", end="")
+						print("-", end="")
 					elif self.grid[f"{x},{y}"] == 2:
 						print("X", end="")
 				else:
-					print(" ", end="")
+					print("?", end="")
 			print()
 
 	''' Finds the shortest path to the oxygen system from start (0,0) via BFS '''
@@ -214,6 +215,7 @@ def main():
 				VM.add_to_input_queue( last_move )
 				os.system('clear')
 				grid.print_map()
+				sleep(0.03)
 			else:
 				# If there are no possible moves, determine the challenge's questions
 				os.system('clear')
