@@ -332,13 +332,16 @@ class VM:
 			else:
 				print(f"{opcode}", end='')
 
-			for m in range( len(mode) ):
-				if mode[m] == 0:
-					print(f"${self.memory[ pos + m + 1 ]} ", end='')
-				elif mode[m] == 1:
-					print(f"{self.memory[ pos + m + 1 ]} ", end='')
-				elif mode[m] == 2:
-					print(f"$RB+{self.memory[ pos + m + 1 ]} ", end='')
+			try:
+				for m in range( len(mode) ):
+					if mode[m] == 0:
+						print(f"${self.memory[ pos + m + 1 ]} ", end='')
+					elif mode[m] == 1:
+						print(f"{self.memory[ pos + m + 1 ]} ", end='')
+					elif mode[m] == 2:
+						print(f"$RB+{self.memory[ pos + m + 1 ]} ", end='')
+			except:
+				print(f"??? ", end="")
 
 			print()
 			pos += 1
@@ -349,6 +352,15 @@ class VM:
 	def pad_memory(self, size, padding = 0):
 		while len(self.memory) < size:
 			self.memory.append(padding)
+
+	def poke(self, address, value):
+		self.memory[address] = value
+
+	def peek(self, address, value):
+		if address in memory:
+			return memory[address]
+		else:
+			return None
 
 
 
