@@ -142,9 +142,12 @@ def main():
 
 	print(f"Sum of Alignment Parameters: {align_params}")
 	print(f"Start: {start}, Scaffolds: {scaffolds}")
+
+	# Part 2
 	path = path_to_all(grid, start, scaffolds)
 	print(compile_path(path))
 
+	# The analysis on how to organize movement commands was performed manually
 	A = 'L,12,L,12,R,4\n'
 	B = 'R,10,R,6,R,4,R,4\n'
 	C = 'R,6,L,12,L,12\n'
@@ -155,9 +158,6 @@ def main():
 	C = convert_to_decimal(C)
 	Main = convert_to_decimal(Main)
 
-
-
-	# Part 2
 	VM = Intcode.VM("inputs/day17.txt", automated=True)
 	VM.poke(0, 2)
 	running = True
